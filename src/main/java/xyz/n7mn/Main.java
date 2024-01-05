@@ -3,6 +3,7 @@ package xyz.n7mn;
 import com.amihaiemil.eoyaml.Yaml;
 import com.amihaiemil.eoyaml.YamlMapping;
 import com.amihaiemil.eoyaml.YamlMappingBuilder;
+import com.google.gson.Gson;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -49,11 +50,89 @@ public class Main {
         }
 
         // HTTP通信を受け取る
-        ServerSocket socket = null;
+        new Thread(()->{
+            ServerSocket socket = null;
+            try {
+                socket = new ServerSocket(28280);
+                while (true) {
+                    Socket sock = socket.accept();
+                    System.gc();
+                    new Thread(() -> {
+                        try {
+                            InputStream in = sock.getInputStream();
+                            OutputStream out = sock.getOutputStream();
+                            byte[] data = new byte[100000000];
+
+                            int readSize = in.read(data);
+                            data = Arrays.copyOf(data, readSize);
+                            String text = new String(data, StandardCharsets.UTF_8);
+                            Matcher matcher1 = Pattern.compile("HTTP/1\\.(\\d)").matcher(text);
+                            Matcher matcher2 = Pattern.compile("GET /video/(.*) HTTP").matcher(text);
+
+                            String httpVersion = "1.1";
+                            if (matcher1.find()){
+                                httpVersion = "1."+matcher1.group(1);
+                            }
+
+                            if (matcher2.find()){
+
+                                File file = new File("./temp/" + matcher2.group(1).replaceAll("\\.\\./",""));
+                                //System.out.println("./temp/" + matcher2.group(1).replaceAll("\\.\\./",""));
+
+                                String ContentType = "application/octet-stream";
+                                if (file.getName().endsWith("m3u8")){
+                                    ContentType = "application/vnd.apple.mpegurl";
+                                }
+                                if (file.getName().endsWith("ts")){
+                                    ContentType = "video/mp2t";
+                                }
+                                if (file.getName().endsWith("mp4")){
+                                    ContentType = "video/mp4";
+                                }
+
+                                if (!file.exists()){
+                                    out.write(("HTTP/"+httpVersion+" 404 Not Found\n" +
+                                            "Content-Type: text/plain\n" +
+                                            "\n404").getBytes(StandardCharsets.UTF_8));
+                                } else {
+                                    FileInputStream stream = new FileInputStream(file);
+
+                                    out.write(("HTTP/" + httpVersion + " 200 OK\r\n" +
+                                            "Date: " + new Date() + "\r\n" +
+                                            "Content-Type: "+ContentType+"\r\n" +
+                                            "\r\n").getBytes(StandardCharsets.UTF_8));
+
+                                    out.write(stream.readAllBytes());
+
+                                    stream.close();
+
+                                }
+                                out.flush();
+                            } else {
+                                out.write(("HTTP/" + httpVersion + " 405 Method Not Allowed").getBytes(StandardCharsets.UTF_8));
+                                out.flush();
+                            }
+                            in.close();
+                            out.close();
+                            sock.close();
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }).start();
+                }
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }).start();
+
+        // 処理受付
+        ServerSocket socket2 = null;
         try {
-            socket = new ServerSocket(28280);
+            socket2 = new ServerSocket(28279);
             while (true) {
-                Socket sock = socket.accept();
+                //System.out.println("a");
+                Socket sock = socket2.accept();
                 System.gc();
                 new Thread(() -> {
                     try {
@@ -63,101 +142,43 @@ public class Main {
 
                         int readSize = in.read(data);
                         data = Arrays.copyOf(data, readSize);
-                        String text = new String(data, StandardCharsets.UTF_8);
-                        Matcher matcher1 = Pattern.compile("GET /\\?url=(.*) HTTP").matcher(text);
-                        Matcher matcher2 = Pattern.compile("HTTP/1\\.(\\d)").matcher(text);
-                        Matcher matcher3 = Pattern.compile("GET /video/(.*) HTTP").matcher(text);
 
-                        String httpVersion = "1.1";
-                        if (matcher2.find()){
-                            httpVersion = "1."+matcher2.group(1);
-                        }
-
-                        if (matcher1.find()){
-
-                            String str = matcher1.group(1);
-                            String url = str.split("&cc&")[0];
-                            String mode = "";
-                            if (str.split("&cc&").length >= 2){
-                                mode = str.split("&cc&")[1];
-                            }
-                            String proxy = ":";
-                            if (str.split("&cc&").length == 3){
-                                proxy = str.split("&cc&")[2];
-                            }
-
-                            String[] temp = url.split(",,");
-                            String[] temp2;
-                            if (!proxy.equals(":")){
-                                temp2 = proxy.split(":");
-                            } else {
-                                temp2 = new String[]{"","0"};
-                            }
-
-                            String run = "";
-                            if (mode.equals("com")) {
-                                run = new BiliBiliCom().run(temp[0], temp[1], temp2[0], Integer.parseInt(temp2[1]));
-                            } else {
-                                run = new BiliBiliTv().run(temp[0], temp[1], temp2[0], Integer.parseInt(temp2[1]));
-                            }
-
-                            queueList.put(url, new Queue(url, new Date()));
-
-                            out.write(("HTTP/" + httpVersion + " 200 OK\n" +
-                                    "Content-Type: text/plain\n" +
-                                    "Date: " + new Date() + "\n\n" +
-                                    "/video/" + run).replaceAll("\0", "").getBytes(StandardCharsets.UTF_8));
-                            out.flush();
-                            in.close();
-                            out.close();
+                        byte[] bytes = data;
+                        if (bytes.length == 0){
                             sock.close();
-
                             return;
                         }
 
-                        if (matcher3.find()){
+                        //System.out.println(new String(bytes, StandardCharsets.UTF_8));
 
-                            File file = new File("./temp/" + matcher3.group(1).replaceAll("\\.\\./",""));
-                            //System.out.println("./temp/" + matcher3.group(1).replaceAll("\\.\\./",""));
+                        RequestJson json = new Gson().fromJson(new String(bytes, StandardCharsets.UTF_8), RequestJson.class);
 
-                            String ContentType = "application/octet-stream";
-                            if (file.getName().endsWith("m3u8")){
-                                ContentType = "application/vnd.apple.mpegurl";
-                            }
-                            if (file.getName().endsWith("ts")){
-                                ContentType = "video/mp2t";
-                            }
-                            if (file.getName().endsWith("mp4")){
-                                ContentType = "video/mp4";
-                            }
-
-                            if (!file.exists()){
-                                out.write(("HTTP/"+httpVersion+" 404 Not Found\n" +
-                                        "Content-Type: text/plain\n" +
-                                        "\n404").getBytes(StandardCharsets.UTF_8));
+                        String url;
+                        if (json.getSiteType().equals("com")){
+                            if (json.getProxy() != null){
+                                url = new BiliBiliCom().run(json.getVideoURL(), json.getAudioURL(), json.getVideoDuration(), json.getProxy().split(":")[0], Integer.parseInt(json.getProxy().split(":")[1]));
                             } else {
-                                FileInputStream stream = new FileInputStream(file);
-
-                                out.write(("HTTP/" + httpVersion + " 200 OK\r\n" +
-                                        "Date: " + new Date() + "\r\n" +
-                                        "Content-Type: "+ContentType+"\r\n" +
-                                        "\r\n").getBytes(StandardCharsets.UTF_8));
-
-                                out.write(stream.readAllBytes());
-
-                                stream.close();
-
+                                url = new BiliBiliCom().run(json.getVideoURL(), json.getAudioURL(), json.getVideoDuration(), "", 0);
                             }
-                            out.flush();
                         } else {
-                            out.write(("HTTP/" + httpVersion + " 405 Method Not Allowed").getBytes(StandardCharsets.UTF_8));
-                            out.flush();
+                            if (json.getProxy() != null){
+                                url = new BiliBiliTv().run(json.getVideoURL(), json.getAudioURL(), json.getProxy().split(":")[0], Integer.parseInt(json.getProxy().split(":")[1]));
+                            } else {
+                                url = new BiliBiliTv().run(json.getVideoURL(), json.getAudioURL(), "", 0);
+                            }
                         }
+
+                        url = "https://b.nicovrc.net/video/" + url;
+
+                        out.write(url.getBytes());
+                        out.flush();
+
+                        //System.out.println("b : " + url);
                         in.close();
                         out.close();
                         sock.close();
 
-                    } catch (Exception e) {
+                    } catch (Exception e){
                         e.printStackTrace();
                     }
                 }).start();
@@ -165,6 +186,7 @@ public class Main {
         } catch (Exception e){
             e.printStackTrace();
         }
+
     }
 
     public static String getffmpegPass(){
