@@ -18,7 +18,7 @@ import java.util.UUID;
 
 public class BiliBiliCom {
 
-    public String run(String videoUrl, String audioUrl, String proxyAddress, int proxyPort){
+    public String run(String videoUrl, String audioUrl, long duration, String proxyAddress, int proxyPort){
         if (!new File("./temp").exists()){
             new File("./temp").mkdir();
         }
@@ -33,7 +33,7 @@ public class BiliBiliCom {
             for(byte b: cipher_byte) {
                 sb.append(String.format("%02x", b&0xff) );
             }
-            fileId = sb.substring(0, 16);
+            fileId = new Date().getTime()+"_"+sb.substring(0, 16);
         } catch (Exception e){
             e.printStackTrace();
             return null;
@@ -43,7 +43,7 @@ public class BiliBiliCom {
         final OkHttpClient client = !proxyAddress.isEmpty() ? builder.proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyAddress, proxyPort))).build() : new OkHttpClient();
 
         //System.out.println(new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()));
-        if (new File("./temp"+fileId).mkdir()){
+        if (new File("./temp/"+fileId).mkdir()){
 
             String[] split = videoUrl.split("\\?")[0].split("/");
             String fileName = split[split.length - 1];
@@ -61,7 +61,7 @@ public class BiliBiliCom {
                 try {
                     Response response = client.newCall(request).execute();
                     if (response.body() != null) {
-                        FileOutputStream stream = new FileOutputStream("./temp" + fileId + "/" + fileName);
+                        FileOutputStream stream = new FileOutputStream("./temp/" + fileId + "/" + fileName);
                         stream.write(response.body().bytes());
                         stream.flush();
                         stream.close();
@@ -81,7 +81,7 @@ public class BiliBiliCom {
                 try {
                     Response response2 = client.newCall(request2).execute();
                     if (response2.body() != null) {
-                        FileOutputStream stream = new FileOutputStream("./temp" + fileId + "/" + fileName2);
+                        FileOutputStream stream = new FileOutputStream("./temp/" + fileId + "/" + fileName2);
                         stream.write(response2.body().bytes());
                         stream.flush();
                         stream.close();
@@ -93,44 +93,62 @@ public class BiliBiliCom {
                 }
             }).start();
 
-            //System.out.println("DL待機 : " + new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()));
-            boolean isOK = false;
-            File file = new File("./temp" + fileId + "/" + fileName);
-            File file1 = new File("./temp" + fileId + "/" + fileName2);
-            while (!isOK){
-                //System.out.println(new File("./temp"+fileId+"/"+fileName).exists() + " : " + new File("./temp"+fileId+"/"+fileName2).exists());
-                isOK = file.exists() && file1.exists();
-                if (file.length() == 0 || file1.length() == 0){
-                    isOK = false;
-                }
+            String m3u8_main = "#EXTM3U\n" +
+                    "#EXT-X-VERSION:6\n" +
+                    "#EXT-X-INDEPENDENT-SEGMENTS\n" +
+                    "#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID=\"audio\",NAME=\"Main Audio\",DEFAULT=YES,URI=\"/video/"+fileId+"/audio.m3u8\"\n" +
+                    "#EXT-X-STREAM-INF:AUDIO=\"audio\"\n" +
+                    "/video/"+fileId+"/video.m3u8";
+
+            String m3u8_sub = "#EXTM3U\n" +
+                    "#EXT-X-VERSION:6\n" +
+                    "#EXT-X-INDEPENDENT-SEGMENTS\n" +
+                    "#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID=\"audio\",NAME=\"Main Audio\",DEFAULT=YES,URI=\"/video/"+fileId+"/audio.m3u8\"\n" +
+                    "#EXT-X-STREAM-INF:AUDIO=\"audio\"\n" +
+                    "/video/"+fileId+"/sub.m3u8";
+
+            String m3u8_video = "#EXTM3U\n" +
+                    "#EXT-X-VERSION:6\n" +
+                    "#EXT-X-TARGETDURATION:"+duration+"\n" +
+                    "#EXT-X-PLAYLIST-TYPE:VOD\n" +
+                    "#EXT-X-MEDIA-SEQUENCE:1\n" +
+                    "#EXTINF:"+duration+",\n" +
+                    "/video/"+fileId+"/"+fileName + "\n" +
+                    "#EXT-X-ENDLIST";
+
+            String m3u8_audio = "#EXTM3U\n" +
+                    "#EXT-X-VERSION:6\n" +
+                    "#EXT-X-TARGETDURATION:"+duration+"\n" +
+                    "#EXT-X-PLAYLIST-TYPE:VOD\n" +
+                    "#EXT-X-MEDIA-SEQUENCE:1\n" +
+                    "#EXTINF:"+duration+",\n" +
+                    "/video/"+fileId+"/"+fileName2 + "\n" +
+                    "#EXT-X-ENDLIST";
+
+            try {
+                FileOutputStream stream = new FileOutputStream("./temp/" + fileId + "/sub.m3u8");
+                stream.write(m3u8_main.getBytes(StandardCharsets.UTF_8));
+                stream.flush();
+                stream.close();
+
+                FileOutputStream stream2 = new FileOutputStream("./temp/" + fileId + "/main.m3u8");
+                stream2.write(m3u8_sub.getBytes(StandardCharsets.UTF_8));
+                stream2.flush();
+                stream2.close();
+
+                FileOutputStream stream3 = new FileOutputStream("./temp/" + fileId + "/video.m3u8");
+                stream3.write(m3u8_video.getBytes(StandardCharsets.UTF_8));
+                stream3.flush();
+                stream3.close();
+
+                FileOutputStream stream4 = new FileOutputStream("./temp/" + fileId + "/audio.m3u8");
+                stream4.write(m3u8_audio.getBytes(StandardCharsets.UTF_8));
+                stream4.flush();
+                stream4.close();
+            } catch (Exception e){
+                //e.printStackTrace();
             }
 
-            //System.out.println(isOK);
-            //System.out.println("DL完了 : "+new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()));
-
-            new File("./temp"+fileId).mkdir();
-            new File("./temp/"+fileId).mkdir();
-            String str = Main.getffmpegPass()+" -i ./temp"+fileId+"/"+fileName+" -i ./temp"+fileId+"/"+fileName2+" -c:v copy -c:a copy -f hls -hls_time 5 -hls_playlist_type vod -hls_segment_filename ./temp/"+fileId+"/%3d.ts ./temp/"+fileId+"/main.m3u8"; //./temp/"+fileId+".mp4";
-            //System.out.println(str);
-            new Thread(()->{
-                try {
-                    //System.out.println("変換処理開始 : "+new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()));
-                    Runtime runtime = Runtime.getRuntime();
-                    Process exec = runtime.exec(str);
-                    exec.waitFor();
-                    //System.out.println("変換完了 : "+new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()));
-                    new File("./temp"+fileId+"/"+fileName).delete();
-                    new File("./temp"+fileId+"/"+fileName2).delete();
-                    new File("./temp"+fileId).delete();
-                    //System.out.println("実施結果 : "+exec.waitFor());
-                    //InputStream errorStream = exec.getErrorStream();
-                    //InputStream inputStream = exec.getInputStream();
-                    //System.out.println(new String(inputStream.readAllBytes()));
-                    //System.out.println(new String(errorStream.readAllBytes()));
-                } catch (Exception e) {
-                    e.fillInStackTrace();
-                }
-            }).start();
             try {
                 Thread.sleep(1500L);
             } catch (InterruptedException e) {
