@@ -39,59 +39,9 @@ public class BiliBiliCom {
             return null;
         }
 
-        final OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        final OkHttpClient client = !proxyAddress.isEmpty() ? builder.proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyAddress, proxyPort))).build() : new OkHttpClient();
-
         //System.out.println(new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()));
         if (new File("./temp/"+fileId).mkdir()){
 
-            String[] split = videoUrl.split("\\?")[0].split("/");
-            String fileName = split[split.length - 1];
-            //System.out.println("video : "+ fileName);
-
-            String[] split2 = audioUrl.split("\\?")[0].split("/");
-            String fileName2 = split2[split2.length - 1];
-
-            new Thread(()-> {
-
-                Request request = new Request.Builder()
-                        .url(videoUrl)
-                        .addHeader("Referer", "https://www.bilibili.com/")
-                        .build();
-                try {
-                    Response response = client.newCall(request).execute();
-                    if (response.body() != null) {
-                        FileOutputStream stream = new FileOutputStream("./temp/" + fileId + "/" + fileName);
-                        stream.write(response.body().bytes());
-                        stream.flush();
-                        stream.close();
-                    }
-                    response.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-            }).start();
-            new Thread(()->{
-                //System.out.println("audio : "+ fileName2);
-                Request request2 = new Request.Builder()
-                        .url(audioUrl)
-                        .addHeader("Referer", "https://www.bilibili.com/")
-                        .build();
-                try {
-                    Response response2 = client.newCall(request2).execute();
-                    if (response2.body() != null) {
-                        FileOutputStream stream = new FileOutputStream("./temp/" + fileId + "/" + fileName2);
-                        stream.write(response2.body().bytes());
-                        stream.flush();
-                        stream.close();
-                    }
-                    response2.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-
-                }
-            }).start();
 
             String m3u8_main = "#EXTM3U\n" +
                     "#EXT-X-VERSION:6\n" +
@@ -109,20 +59,20 @@ public class BiliBiliCom {
 
             String m3u8_video = "#EXTM3U\n" +
                     "#EXT-X-VERSION:6\n" +
-                    "#EXT-X-TARGETDURATION:"+duration+"\n" +
+                    "#EXT-X-TARGETDURATION:0\n" +
                     "#EXT-X-PLAYLIST-TYPE:VOD\n" +
                     "#EXT-X-MEDIA-SEQUENCE:1\n" +
                     "#EXTINF:"+duration+",\n" +
-                    "/video/"+fileId+"/"+fileName + "\n" +
+                    videoUrl.replaceAll("https://upos-sz-mirroraliov\\.bilivideo\\.com", "").replaceAll("https://upos-hz-mirrorakam\\.akamaized\\.net", "") + "&com=true" + (videoUrl.startsWith("https://upos-hz-mirrorakam\\.akamaized\\.net") ? "&com=aka" : "") + "\n" +
                     "#EXT-X-ENDLIST";
 
             String m3u8_audio = "#EXTM3U\n" +
                     "#EXT-X-VERSION:6\n" +
-                    "#EXT-X-TARGETDURATION:"+duration+"\n" +
+                    "#EXT-X-TARGETDURATION:0\n" +
                     "#EXT-X-PLAYLIST-TYPE:VOD\n" +
                     "#EXT-X-MEDIA-SEQUENCE:1\n" +
                     "#EXTINF:"+duration+",\n" +
-                    "/video/"+fileId+"/"+fileName2 + "\n" +
+                    audioUrl.replaceAll("https://upos-sz-mirroraliov\\.bilivideo\\.com", "").replaceAll("https://upos-hz-mirrorakam\\.akamaized\\.net", "") + "&com=true" + (audioUrl.startsWith("https://upos-hz-mirrorakam\\.akamaized\\.net") ? "&com=aka" : "") + "\n" +
                     "#EXT-X-ENDLIST";
 
             try {
@@ -147,12 +97,6 @@ public class BiliBiliCom {
                 stream4.close();
             } catch (Exception e){
                 //e.printStackTrace();
-            }
-
-            try {
-                Thread.sleep(1500L);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
             }
         }
 
