@@ -129,7 +129,7 @@ public class Main {
                             boolean match2 = matcher2_2.find();
 
                             if (match1 && !match2){
-                                System.out.println("!");
+                                //System.out.println("!");
                                 Matcher matcher = Pattern.compile("&com=true").matcher(text);
                                 if (matcher.find()){
                                     OkHttpClient client = new OkHttpClient();
@@ -151,7 +151,7 @@ public class Main {
 
                                     Response response = client.newCall(request).execute();
                                     if (response.body() != null) {
-                                        System.out.println(response.code());
+                                        //System.out.println(response.code());
                                         if (response.code() == 200){
                                             out.write(("HTTP/" + httpVersion + " 200 OK\r\n" +
                                                     "Content-Type: "+response.header("Content-Type")+"\r\n" +
