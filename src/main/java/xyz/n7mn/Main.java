@@ -120,6 +120,8 @@ public class Main {
                             Matcher matcher2_1 = Pattern.compile("(GET|HEAD) (.+) HTTP").matcher(text);
                             Matcher matcher2_2 = Pattern.compile("GET /video/(.*) HTTP").matcher(text);
 
+                            Matcher matcher3 = Pattern.compile("[uU]ser-[aA]gent: (VLC|vlc)").matcher(text);
+
                             String httpVersion = "1.1";
                             if (matcher1.find()){
                                 httpVersion = "1."+matcher1.group(1);
@@ -181,7 +183,12 @@ public class Main {
 
                             if (match2){
 
-                                File file = new File("./temp/" + matcher2_2.group(1).replaceAll("\\.\\./",""));
+                                String tempFileName = matcher2_2.group(1).replaceAll("\\.\\./", "");
+                                File file = new File("./temp/" + tempFileName);
+                                if (matcher3.find() && file.getName().endsWith("main.m3u8")){
+                                    file = new File("./temp/" + tempFileName.replaceAll("main\\.m3u8", "sub.m3u8"));
+                                }
+
                                 //System.out.println("./temp/" + matcher2.group(1).replaceAll("\\.\\./",""));
 
                                 String ContentType = "application/octet-stream";
