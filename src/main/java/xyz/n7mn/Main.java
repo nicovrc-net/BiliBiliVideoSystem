@@ -129,24 +129,20 @@ public class Main {
                             boolean match2 = matcher2_2.find();
 
                             if (match1 && !match2){
+                                System.out.println(text);
                                 //System.out.println("!");
                                 Matcher matcher = Pattern.compile("&com=true").matcher(text);
                                 if (matcher.find()){
                                     OkHttpClient client = new OkHttpClient();
-                                    String[] split = matcher2_1.group(2).split("&com=true");
+                                    String[] split = matcher2_1.group(2).split("&com=true&host=");
 
-                                    Request request;
-                                    if (split.length != 2) {
-                                         request = new Request.Builder()
-                                                .url("https://upos-sz-mirroraliov.bilivideo.com" + split[0])
-                                                .addHeader("Referer", "https://www.bilibili.com/")
-                                                .build();
-                                    } else {
-                                        request = new Request.Builder()
-                                                .url("https://upos-hz-mirrorakam.akamaized.net" + split[0])
-                                                .addHeader("Referer", "https://www.bilibili.com/")
-                                                .build();
-                                    }
+                                    //for (String str : split){
+                                    //    System.out.println(str);
+                                    //}
+                                    Request request = new Request.Builder()
+                                            .url("https://" + split[1] + split[0])
+                                            .addHeader("Referer", "https://www.bilibili.com/")
+                                            .build();
 
 
                                     Response response = client.newCall(request).execute();
@@ -168,6 +164,12 @@ public class Main {
                                         }
                                     }
                                     response.close();
+                                } else {
+                                    out.write(("HTTP/" + httpVersion + " 404 Not Found\r\n" +
+                                            "Content-Type: text/plain\r\n" +
+                                            "\r\n" +
+                                            "404").getBytes(StandardCharsets.UTF_8));
+                                    out.flush();
                                 }
 
                                 in.close();

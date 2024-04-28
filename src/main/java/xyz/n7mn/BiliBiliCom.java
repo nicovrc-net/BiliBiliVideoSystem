@@ -63,7 +63,7 @@ public class BiliBiliCom {
                     "#EXT-X-PLAYLIST-TYPE:VOD\n" +
                     "#EXT-X-MEDIA-SEQUENCE:1\n" +
                     "#EXTINF:"+duration+",\n" +
-                    videoUrl.replaceAll("https://upos-sz-mirroraliov\\.bilivideo\\.com", "").replaceAll("https://upos-hz-mirrorakam\\.akamaized\\.net", "") + "&com=true" + (videoUrl.startsWith("https://upos-hz-mirrorakam\\.akamaized\\.net") ? "&com=aka" : "") + "\n" +
+                    videoUrl.replaceAll(videoUrl.split("/")[2], "b.nicovrc.net") + "&com=true&host=" + videoUrl.split("/")[2] + "\n" +
                     "#EXT-X-ENDLIST";
 
             String m3u8_audio = "#EXTM3U\n" +
@@ -72,7 +72,7 @@ public class BiliBiliCom {
                     "#EXT-X-PLAYLIST-TYPE:VOD\n" +
                     "#EXT-X-MEDIA-SEQUENCE:1\n" +
                     "#EXTINF:"+duration+",\n" +
-                    audioUrl.replaceAll("https://upos-sz-mirroraliov\\.bilivideo\\.com", "").replaceAll("https://upos-hz-mirrorakam\\.akamaized\\.net", "") + "&com=true" + (audioUrl.startsWith("https://upos-hz-mirrorakam\\.akamaized\\.net") ? "&com=aka" : "") + "\n" +
+                    audioUrl.replaceAll(audioUrl.split("/")[2], "b.nicovrc.net") + "&com=true&host=" + audioUrl.split("/")[2] + "\n" +
                     "#EXT-X-ENDLIST";
 
             try {
