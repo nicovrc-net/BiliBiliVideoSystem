@@ -18,7 +18,7 @@ import java.util.UUID;
 
 public class BiliBiliCom {
 
-    public String run(String videoUrl, String audioUrl, long duration, String proxyAddress, int proxyPort){
+    public String run(String videoUrl, String audioUrl, long duration, String proxyAddress, int proxyPort, boolean isVRC){
         if (!new File("./temp").exists()){
             new File("./temp").mkdir();
         }
@@ -76,13 +76,15 @@ public class BiliBiliCom {
                     "#EXT-X-ENDLIST";
 
             try {
-                FileOutputStream stream = new FileOutputStream("./temp/" + fileId + "/sub.m3u8");
-                stream.write(m3u8_main.getBytes(StandardCharsets.UTF_8));
-                stream.flush();
-                stream.close();
+                if (isVRC){
+                    FileOutputStream stream = new FileOutputStream("./temp/" + fileId + "/sub.m3u8");
+                    stream.write(m3u8_main.getBytes(StandardCharsets.UTF_8));
+                    stream.flush();
+                    stream.close();
+                }
 
                 FileOutputStream stream2 = new FileOutputStream("./temp/" + fileId + "/main.m3u8");
-                stream2.write(m3u8_sub.getBytes(StandardCharsets.UTF_8));
+                stream2.write(isVRC ? m3u8_sub.getBytes(StandardCharsets.UTF_8) : m3u8_main.getBytes(StandardCharsets.UTF_8));
                 stream2.flush();
                 stream2.close();
 

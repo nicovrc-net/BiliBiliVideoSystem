@@ -268,9 +268,9 @@ public class Main {
                         String url;
                         if (json.getSiteType().equals("com")){
                             if (json.getProxy() != null){
-                                url = new BiliBiliCom().run(json.getVideoURL(), json.getAudioURL(), json.getVideoDuration(), json.getProxy().split(":")[0], Integer.parseInt(json.getProxy().split(":")[1]));
+                                url = new BiliBiliCom().run(json.getVideoURL(), json.getAudioURL(), json.getVideoDuration(), json.getProxy().split(":")[0], Integer.parseInt(json.getProxy().split(":")[1]), json.isVRC());
                             } else {
-                                url = new BiliBiliCom().run(json.getVideoURL(), json.getAudioURL(), json.getVideoDuration(), "", 0);
+                                url = new BiliBiliCom().run(json.getVideoURL(), json.getAudioURL(), json.getVideoDuration(), "", 0, json.isVRC());
                             }
                         } else {
                             if (json.getProxy() != null){
