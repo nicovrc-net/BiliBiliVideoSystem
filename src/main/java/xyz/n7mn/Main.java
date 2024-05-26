@@ -20,6 +20,12 @@ public class Main {
     private static String ffmpegPass = "";
     private static HashMap<String, Queue> queueList = new HashMap<>();
 
+    private static final Pattern matcher_httpVersion = Pattern.compile("HTTP/1\\.(\\d)");
+    private static final Pattern matcher_Request = Pattern.compile("(GET|HEAD) (.+) HTTP");
+    private static final Pattern matcher_Request2 = Pattern.compile("(GET|HEAD) /video/(.+) HTTP");
+    private static final Pattern matcher_resoniteUA = Pattern.compile("[uU]ser-[aA]gent: (VLC|vlc)");
+    private static final Pattern matcher_mode_com = Pattern.compile("&com=true");
+
 
     public static void main(String[] args) {
 
@@ -115,12 +121,12 @@ public class Main {
                             int readSize = in.read(data);
                             data = Arrays.copyOf(data, readSize);
                             String text = new String(data, StandardCharsets.UTF_8);
-                            Matcher matcher1 = Pattern.compile("HTTP/1\\.(\\d)").matcher(text);
+                            Matcher matcher1 = matcher_httpVersion.matcher(text);
 
-                            Matcher matcher2_1 = Pattern.compile("(GET|HEAD) (.+) HTTP").matcher(text);
-                            Matcher matcher2_2 = Pattern.compile("GET /video/(.*) HTTP").matcher(text);
+                            Matcher matcher2_1 = matcher_Request.matcher(text);
+                            Matcher matcher2_2 = matcher_Request2.matcher(text);
 
-                            Matcher matcher3 = Pattern.compile("[uU]ser-[aA]gent: (VLC|vlc)").matcher(text);
+                            Matcher matcher3 = matcher_resoniteUA.matcher(text);
 
                             String httpVersion = "1.1";
                             if (matcher1.find()){
@@ -133,7 +139,7 @@ public class Main {
                             if (match1 && !match2){
                                 System.out.println(text);
                                 //System.out.println("!");
-                                Matcher matcher = Pattern.compile("&com=true").matcher(text);
+                                Matcher matcher = matcher_mode_com.matcher(text);
                                 if (matcher.find()){
                                     OkHttpClient client = new OkHttpClient();
                                     String[] split = matcher2_1.group(2).split("&com=true&host=");
@@ -183,7 +189,7 @@ public class Main {
 
                             if (match2){
 
-                                String tempFileName = matcher2_2.group(1).replaceAll("\\.\\./", "");
+                                String tempFileName = matcher2_2.group(2).replaceAll("\\.\\./", "");
                                 File file = new File("./temp/" + tempFileName);
                                 if (matcher3.find() && file.getName().endsWith("main.m3u8")){
                                     file = new File("./temp/" + tempFileName.replaceAll("main\\.m3u8", "sub.m3u8"));
