@@ -8,13 +8,11 @@ import java.util.HashMap;
 
 public class TCPServer extends Thread{
 
-    private final HashMap<String, VideoData> TempList;
     private final String RedisServerIP;
     private final int RedisServerPort;
     private final String RedisPassword;
 
     public TCPServer(HashMap<String, VideoData> TempList, String RedisServerIP, int RedisServerPort, String RedisPassword){
-        this.TempList = TempList;
         this.RedisServerIP = RedisServerIP;
         this.RedisServerPort = RedisServerPort;
         this.RedisPassword = RedisPassword;
