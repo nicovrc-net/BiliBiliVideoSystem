@@ -212,6 +212,7 @@ public class HTTPServer extends Thread{
                             final OkHttpClient client = new OkHttpClient();
                             Request request = new Request.Builder()
                                     .url("https://" + split1[1] + split1[0])
+                                    .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:127.0) Gecko/20100101 Firefox/127.0")
                                     .addHeader("Referer", "https://www.bilibili.com/")
                                     .build();
                             Response response = client.newCall(request).execute();
@@ -243,6 +244,7 @@ public class HTTPServer extends Thread{
                             final OkHttpClient client = new OkHttpClient();
                             Request request = new Request.Builder()
                                     .url("https://" + split2[1] + split2[0])
+                                    .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:127.0) Gecko/20100101 Firefox/127.0")
                                     .addHeader("Referer", "https://www.bilibili.tv/")
                                     .build();
                             Response response = client.newCall(request).execute();
