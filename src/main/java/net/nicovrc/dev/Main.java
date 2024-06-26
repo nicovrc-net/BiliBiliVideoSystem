@@ -4,6 +4,7 @@ import com.amihaiemil.eoyaml.Yaml;
 import com.amihaiemil.eoyaml.YamlMapping;
 import com.amihaiemil.eoyaml.YamlMappingBuilder;
 import net.nicovrc.dev.server.HTTPServer;
+import net.nicovrc.dev.server.TCPServer;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
@@ -98,6 +99,7 @@ public class Main {
 
 
         new HTTPServer(TempList, RedisServerIP, RedisServerPort, RedisPassword).start();
+        new TCPServer(RedisServerIP, RedisServerPort, RedisPassword).start();
 
     }
 }
