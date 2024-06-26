@@ -1,4 +1,4 @@
-package xyz.n7mn;
+package net.nicovrc.dev;
 
 public class RequestJson {
     private String SiteType;
