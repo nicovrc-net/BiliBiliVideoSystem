@@ -11,8 +11,6 @@ import redis.clients.jedis.JedisPool;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -159,13 +157,23 @@ public class HTTPServer extends Thread{
                                     sock.close();
                                     return;
                                 } else if (URI.toLowerCase(Locale.ROOT).startsWith("/video/video.m3u8")){
-                                    m3u8 = "#EXT-X-VERSION:6\n" +
-                                            "#EXT-X-TARGETDURATION:0\n" +
-                                            "#EXT-X-PLAYLIST-TYPE:VOD\n" +
-                                            "#EXT-X-MEDIA-SEQUENCE:1\n" +
-                                            "#EXTINF:"+videoData.getVideoDuration()+",\n" +
-                                            videoData.getVideoURI()+"&hostc=" + videoData.getHostname() + "\n" +
-                                            "#EXT-X-ENDLIST";
+                                    if (videoData.getBilibiliType().equals("com")){
+                                        m3u8 = "#EXT-X-VERSION:6\n" +
+                                                "#EXT-X-TARGETDURATION:0\n" +
+                                                "#EXT-X-PLAYLIST-TYPE:VOD\n" +
+                                                "#EXT-X-MEDIA-SEQUENCE:1\n" +
+                                                "#EXTINF:"+videoData.getVideoDuration()+",\n" +
+                                                videoData.getVideoURI()+"&hostc=" + videoData.getHostname() + "\n" +
+                                                "#EXT-X-ENDLIST";
+                                    } else {
+                                        m3u8 = "#EXT-X-VERSION:6\n" +
+                                                "#EXT-X-TARGETDURATION:0\n" +
+                                                "#EXT-X-PLAYLIST-TYPE:VOD\n" +
+                                                "#EXT-X-MEDIA-SEQUENCE:1\n" +
+                                                "#EXTINF:"+videoData.getVideoDuration()+",\n" +
+                                                videoData.getVideoURI()+"&hostv=" + videoData.getHostname() + "\n" +
+                                                "#EXT-X-ENDLIST";
+                                    }
 
                                     out.write(("HTTP/"+httpVersion+" 200 OK\nAccess-Control-Allow-Origin: *\nContent-Type: application/vnd.apple.mpegurl;\n\n").getBytes(StandardCharsets.UTF_8));
                                     if (Mode.equals("GET")){
@@ -177,13 +185,23 @@ public class HTTPServer extends Thread{
                                     sock.close();
                                     return;
                                 } else if (URI.toLowerCase(Locale.ROOT).startsWith("/video/audio.m3u8")){
-                                    m3u8 = "#EXT-X-VERSION:6\n" +
-                                            "#EXT-X-TARGETDURATION:0\n" +
-                                            "#EXT-X-PLAYLIST-TYPE:VOD\n" +
-                                            "#EXT-X-MEDIA-SEQUENCE:1\n" +
-                                            "#EXTINF:"+videoData.getVideoDuration()+",\n" +
-                                            videoData.getAudioURI()+"&hostc=" + videoData.getHostname() + "\n" +
-                                            "#EXT-X-ENDLIST";
+                                    if (videoData.getBilibiliType().equals("com")){
+                                        m3u8 = "#EXT-X-VERSION:6\n" +
+                                                "#EXT-X-TARGETDURATION:0\n" +
+                                                "#EXT-X-PLAYLIST-TYPE:VOD\n" +
+                                                "#EXT-X-MEDIA-SEQUENCE:1\n" +
+                                                "#EXTINF:"+videoData.getVideoDuration()+",\n" +
+                                                videoData.getAudioURI()+"&hostc=" + videoData.getHostname() + "\n" +
+                                                "#EXT-X-ENDLIST";
+                                    } else {
+                                        m3u8 = "#EXT-X-VERSION:6\n" +
+                                                "#EXT-X-TARGETDURATION:0\n" +
+                                                "#EXT-X-PLAYLIST-TYPE:VOD\n" +
+                                                "#EXT-X-MEDIA-SEQUENCE:1\n" +
+                                                "#EXTINF:"+videoData.getVideoDuration()+",\n" +
+                                                videoData.getAudioURI()+"&hostv=" + videoData.getHostname() + "\n" +
+                                                "#EXT-X-ENDLIST";
+                                    }
 
                                     out.write(("HTTP/"+httpVersion+" 200 OK\nAccess-Control-Allow-Origin: *\nContent-Type: application/vnd.apple.mpegurl;\n\n").getBytes(StandardCharsets.UTF_8));
                                     if (Mode.equals("GET")){
