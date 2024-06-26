@@ -12,7 +12,7 @@ public class TCPServer extends Thread{
     private final int RedisServerPort;
     private final String RedisPassword;
 
-    public TCPServer(HashMap<String, VideoData> TempList, String RedisServerIP, int RedisServerPort, String RedisPassword){
+    public TCPServer(String RedisServerIP, int RedisServerPort, String RedisPassword){
         this.RedisServerIP = RedisServerIP;
         this.RedisServerPort = RedisServerPort;
         this.RedisPassword = RedisPassword;
