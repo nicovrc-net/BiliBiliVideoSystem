@@ -27,7 +27,6 @@ public class HTTPServer extends Thread{
     private final Pattern matcher_Request = Pattern.compile("(GET|HEAD) (.+) HTTP");
     private final Pattern matcher_VideoID = Pattern.compile("(\\d+)_(.+)");
     private final Pattern matcher_resoniteUA = Pattern.compile("[uU]ser-[aA]gent: (VLC|vlc|Vlc|vLc|vlC|VLc|VlC|vLC)");
-    private final Pattern matcher_mode_com = Pattern.compile("&com=true");
 
     private final HashMap<String, VideoData> TempList;
     private final String RedisServerIP;
@@ -48,6 +47,7 @@ public class HTTPServer extends Thread{
         try {
             socket = new ServerSocket(28280);
             while (true) {
+                System.out.println("TCP Port 28280でHTTPサーバー受付開始");
                 try {
                     final Socket sock = socket.accept();
 
@@ -111,12 +111,12 @@ public class HTTPServer extends Thread{
                         final String[] split1 = URI.split("&hostc=");
                         final String[] split2 = URI.split("&hostv=");
 
-                        if (URI.toLowerCase(Locale.ROOT).startsWith("/video")){
+                        if (URI.toLowerCase(Locale.ROOT).startsWith("/video") && videoData != null){
 
                             if (matcher.find()){
                                 final String m3u8;
                                 if (URI.toLowerCase(Locale.ROOT).startsWith("/video/main.m3u8")){
-                                    if (videoData.isVRC()){
+                                    if (videoData.isVRC() || matcher_resoniteUA.matcher(httpRequest).find()){
                                         m3u8 = "#EXTM3U\n" +
                                                 "#EXT-X-VERSION:6\n" +
                                                 "#EXT-X-INDEPENDENT-SEGMENTS\n" +
