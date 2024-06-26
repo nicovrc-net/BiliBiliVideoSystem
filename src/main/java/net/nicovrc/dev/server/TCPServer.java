@@ -31,6 +31,8 @@ public class TCPServer extends Thread{
                 try {
                     final Socket sock = socket.accept();
 
+
+                    sock.close();
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
