@@ -44,8 +44,8 @@ public class HTTPServer extends Thread{
         ServerSocket socket = null;
         try {
             socket = new ServerSocket(28280);
+            System.out.println("TCP Port 28280でHTTPサーバー受付開始");
             while (true) {
-                System.out.println("TCP Port 28280でHTTPサーバー受付開始");
                 try {
                     final Socket sock = socket.accept();
 
@@ -103,7 +103,7 @@ public class HTTPServer extends Thread{
                             out.close();
                             sock.close();
 
-                            return;
+                            continue;
                         }
 
                         final String[] split1 = URI.split("&hostc=");
@@ -138,7 +138,7 @@ public class HTTPServer extends Thread{
                                     in.close();
                                     out.close();
                                     sock.close();
-                                    return;
+                                    continue;
                                 } else if (URI.toLowerCase(Locale.ROOT).startsWith("/video/sub.m3u8")){
                                     m3u8 = "#EXTM3U\n" +
                                             "#EXT-X-VERSION:6\n" +
@@ -155,7 +155,7 @@ public class HTTPServer extends Thread{
                                     in.close();
                                     out.close();
                                     sock.close();
-                                    return;
+                                    continue;
                                 } else if (URI.toLowerCase(Locale.ROOT).startsWith("/video/video.m3u8")){
                                     if (videoData.getBilibiliType().equals("com")){
                                         m3u8 = "#EXT-X-VERSION:6\n" +
@@ -183,7 +183,7 @@ public class HTTPServer extends Thread{
                                     in.close();
                                     out.close();
                                     sock.close();
-                                    return;
+                                    continue;
                                 } else if (URI.toLowerCase(Locale.ROOT).startsWith("/video/audio.m3u8")){
                                     if (videoData.getBilibiliType().equals("com")){
                                         m3u8 = "#EXT-X-VERSION:6\n" +
@@ -211,7 +211,7 @@ public class HTTPServer extends Thread{
                                     in.close();
                                     out.close();
                                     sock.close();
-                                    return;
+                                    continue;
                                 } else {
 
                                     out.write(("HTTP/"+httpVersion+" 404 Not Found\nAccess-Control-Allow-Origin: *\nContent-Type: text/plain; charset=utf-8\n\n").getBytes(StandardCharsets.UTF_8));
@@ -222,7 +222,7 @@ public class HTTPServer extends Thread{
                                     out.close();
                                     sock.close();
 
-                                    return;
+                                    continue;
                                 }
                             }
                         } else if (split1.length == 2) {
@@ -288,7 +288,7 @@ public class HTTPServer extends Thread{
                                 sock.close();
                             }
                             response.close();
-                            return;
+                            continue;
 
                         } else {
                             out.write(("HTTP/"+httpVersion+" 404 Not Found\nAccess-Control-Allow-Origin: *\nContent-Type: text/plain; charset=utf-8\n\n").getBytes(StandardCharsets.UTF_8));
@@ -299,9 +299,17 @@ public class HTTPServer extends Thread{
                             out.close();
                             sock.close();
 
-                            return;
+                            continue;
                         }
 
+                    } else {
+                        out.write(("HTTP/"+httpVersion+" 404 Not Found\nAccess-Control-Allow-Origin: *\nContent-Type: text/plain; charset=utf-8\n\n").getBytes(StandardCharsets.UTF_8));
+                        out.write("404".getBytes(StandardCharsets.UTF_8));
+                        in.close();
+                        out.close();
+                        sock.close();
+
+                        continue;
                     }
 
 

@@ -38,8 +38,8 @@ public class TCPServer extends Thread{
         ServerSocket socket = null;
         try {
             socket = new ServerSocket(28279);
+            System.out.println("TCP Port 28279で受付サーバー受付開始");
             while (true) {
-                System.out.println("TCP Port 28279で受付サーバー受付開始");
                 try {
                     final Socket sock = socket.accept();
 
@@ -50,7 +50,7 @@ public class TCPServer extends Thread{
                     int readSize = in.read(data);
                     if (readSize <= 0) {
                         sock.close();
-                        return;
+                        continue;
                     }
                     data = Arrays.copyOf(data, readSize);
 
@@ -68,7 +68,7 @@ public class TCPServer extends Thread{
                     final StringBuffer sb2 = new StringBuffer("/");
                     int i = 0;
                     for (String str : json.getVideoURL().split("/")){
-                        if (i < 2){
+                        if (i < 3){
                             i++;
                             continue;
                         }
@@ -79,7 +79,7 @@ public class TCPServer extends Thread{
                     }
                     i = 0;
                     for (String str : json.getAudioURL().split("/")){
-                        if (i < 2){
+                        if (i < 3){
                             i++;
                             continue;
                         }
@@ -105,10 +105,12 @@ public class TCPServer extends Thread{
                         jedisPool.close();
                     }).start();
 
-                    sock.getOutputStream().write(("https://" + SiteHostname + "/video/" + id + "/main.m3u8").getBytes(StandardCharsets.UTF_8));
-                    sock.getOutputStream().flush();
-                    sock.getOutputStream().close();
-                    sock.getInputStream().close();
+                    //System.out.println(new Gson().toJson(videoData));
+
+                    out.write(("https://" + SiteHostname + "/video/" + id + "/main.m3u8").getBytes(StandardCharsets.UTF_8));
+                    out.flush();
+                    in.close();
+                    out.close();
 
                     sock.close();
                 } catch (Exception e) {
