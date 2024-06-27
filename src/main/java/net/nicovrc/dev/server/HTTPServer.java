@@ -58,7 +58,7 @@ public class HTTPServer extends Thread{
                     int readSize = in.read(data);
                     if (readSize <= 0) {
                         sock.close();
-                        return;
+                        continue;
                     }
                     data = Arrays.copyOf(data, readSize);
 
@@ -124,7 +124,7 @@ public class HTTPServer extends Thread{
 
                             if (URI.toLowerCase(Locale.ROOT).endsWith("main.m3u8")){
                                 //System.out.println("a");
-                                if (videoData.isVRC() || matcher_resoniteUA.matcher(httpRequest).find()){
+                                if (videoData.isVRC() || !matcher_resoniteUA.matcher(httpRequest).find()){
                                     m3u8 = "#EXTM3U\n" +
                                             "#EXT-X-VERSION:6\n" +
                                             "#EXT-X-INDEPENDENT-SEGMENTS\n" +
@@ -166,20 +166,22 @@ public class HTTPServer extends Thread{
                                 sock.close();
                             } else if (URI.toLowerCase(Locale.ROOT).endsWith("video.m3u8")){
                                 if (videoData.getBilibiliType().equals("com")){
-                                    m3u8 = "#EXT-X-VERSION:6\n" +
-                                            "#EXT-X-TARGETDURATION:0\n" +
+                                    m3u8 = "#EXTM3U\n" +
+                                            "#EXT-X-VERSION:6\n" +
+                                            "#EXT-X-TARGETDURATION:"+videoData.getVideoDuration()+"\n" +
                                             "#EXT-X-PLAYLIST-TYPE:VOD\n" +
-                                            "#EXT-X-MEDIA-SEQUENCE:1\n" +
+                                            "#EXT-X-MEDIA-SEQUENCE:0\n" +
                                             "#EXTINF:"+videoData.getVideoDuration()+",\n" +
-                                            "https://"+SiteHostname+videoData.getVideoURI()+"&hostc=" + videoData.getHostname() + "\n" +
+                                            videoData.getVideoURI()+"&hostc=" + videoData.getHostname() + "\n" +
                                             "#EXT-X-ENDLIST";
                                 } else {
-                                    m3u8 = "#EXT-X-VERSION:6\n" +
-                                            "#EXT-X-TARGETDURATION:0\n" +
+                                    m3u8 = "#EXTM3U\n" +
+                                            "#EXT-X-VERSION:6\n" +
+                                            "#EXT-X-TARGETDURATION:"+videoData.getVideoDuration()+"\n" +
                                             "#EXT-X-PLAYLIST-TYPE:VOD\n" +
-                                            "#EXT-X-MEDIA-SEQUENCE:1\n" +
+                                            "#EXT-X-MEDIA-SEQUENCE:0\n" +
                                             "#EXTINF:"+videoData.getVideoDuration()+",\n" +
-                                            "https://"+SiteHostname+videoData.getVideoURI()+"&hostv=" + videoData.getHostname() + "\n" +
+                                            videoData.getVideoURI()+"&hostv=" + videoData.getHostname() + "\n" +
                                             "#EXT-X-ENDLIST";
                                 }
 
@@ -193,20 +195,22 @@ public class HTTPServer extends Thread{
                                 sock.close();
                             } else if (URI.toLowerCase(Locale.ROOT).endsWith("audio.m3u8")){
                                 if (videoData.getBilibiliType().equals("com")){
-                                    m3u8 = "#EXT-X-VERSION:6\n" +
-                                            "#EXT-X-TARGETDURATION:0\n" +
+                                    m3u8 = "#EXTM3U\n" +
+                                            "#EXT-X-VERSION:6\n" +
+                                            "#EXT-X-TARGETDURATION:"+videoData.getVideoDuration()+"\n" +
                                             "#EXT-X-PLAYLIST-TYPE:VOD\n" +
-                                            "#EXT-X-MEDIA-SEQUENCE:1\n" +
+                                            "#EXT-X-MEDIA-SEQUENCE:0\n" +
                                             "#EXTINF:"+videoData.getVideoDuration()+",\n" +
-                                            "https://"+SiteHostname+videoData.getAudioURI()+"&hostc=" + videoData.getHostname() + "\n" +
+                                            videoData.getAudioURI()+"&hostc=" + videoData.getHostname() + "\n" +
                                             "#EXT-X-ENDLIST";
                                 } else {
-                                    m3u8 = "#EXT-X-VERSION:6\n" +
-                                            "#EXT-X-TARGETDURATION:0\n" +
+                                    m3u8 = "#EXTM3U\n" +
+                                            "#EXT-X-VERSION:6\n" +
+                                            "#EXT-X-TARGETDURATION:"+videoData.getVideoDuration()+"\n" +
                                             "#EXT-X-PLAYLIST-TYPE:VOD\n" +
-                                            "#EXT-X-MEDIA-SEQUENCE:1\n" +
+                                            "#EXT-X-MEDIA-SEQUENCE:0\n" +
                                             "#EXTINF:"+videoData.getVideoDuration()+",\n" +
-                                            "https://"+SiteHostname+videoData.getAudioURI()+"&hostv=" + videoData.getHostname() + "\n" +
+                                            videoData.getAudioURI()+"&hostv=" + videoData.getHostname() + "\n" +
                                             "#EXT-X-ENDLIST";
                                 }
 
@@ -260,7 +264,6 @@ public class HTTPServer extends Thread{
                                 sock.close();
                             }
                             response.close();
-                            return;
                         } else if (split2.length == 2){
 
                             final OkHttpClient client = new OkHttpClient();
