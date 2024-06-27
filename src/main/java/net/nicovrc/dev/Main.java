@@ -99,7 +99,7 @@ public class Main {
 
 
         new HTTPServer(TempList, RedisServerIP, RedisServerPort, RedisPassword).start();
-        new TCPServer(RedisServerIP, RedisServerPort, RedisPassword).start();
+        new TCPServer(TempList, RedisServerIP, RedisServerPort, RedisPassword, SiteHostname).start();
 
     }
 }
