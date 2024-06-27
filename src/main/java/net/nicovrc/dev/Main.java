@@ -98,7 +98,7 @@ public class Main {
         }, 0L, 3600000L);
 
 
-        new HTTPServer(TempList, RedisServerIP, RedisServerPort, RedisPassword).start();
+        new HTTPServer(TempList, RedisServerIP, RedisServerPort, RedisPassword, SiteHostname).start();
         new TCPServer(TempList, RedisServerIP, RedisServerPort, RedisPassword, SiteHostname).start();
 
     }

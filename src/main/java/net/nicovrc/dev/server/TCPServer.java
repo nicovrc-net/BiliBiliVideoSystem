@@ -58,7 +58,13 @@ public class TCPServer extends Thread{
 
                     //System.out.println(request);
 
-                    final RequestJson json = new Gson().fromJson(request, RequestJson.class);
+                    final RequestJson json;
+                    try {
+                        json = new Gson().fromJson(request, RequestJson.class);
+                    } catch (Exception e){
+                        sock.close();
+                        continue;
+                    }
 
                     final VideoData videoData = new VideoData();
                     videoData.setVRC(json.isVRC());
@@ -106,7 +112,7 @@ public class TCPServer extends Thread{
                     }).start();
 
                     //System.out.println(new Gson().toJson(videoData));
-
+                    //System.out.println("https://" + SiteHostname + "/video/" + id + "/main.m3u8");
                     out.write(("https://" + SiteHostname + "/video/" + id + "/main.m3u8").getBytes(StandardCharsets.UTF_8));
                     out.flush();
                     in.close();
