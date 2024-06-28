@@ -113,8 +113,10 @@ public class TCPServer extends Thread{
 
                     //System.out.println(new Gson().toJson(videoData));
                     //System.out.println("https://" + SiteHostname + "/video/" + id + "/main.m3u8");
-                    out.write(("https://" + SiteHostname + "/video/" + id + "/main.m3u8").getBytes(StandardCharsets.UTF_8));
+                    final String URL = "https://" + SiteHostname + "/video/" + id + "/main.m3u8";
+                    out.write(URL.getBytes(StandardCharsets.UTF_8));
                     out.flush();
+
                     in.close();
                     out.close();
 
