@@ -82,7 +82,7 @@ public class Main {
                     if (matcher.find()){
                         long l = Long.parseLong(matcher.group(1));
 
-                        if (new Date().getTime() - l >= 86400000L){
+                        if ((new Date().getTime() - l) >= 86400000L){
                             jedis.del(key);
                             TempList.remove(key.split(":")[1]);
                         }
